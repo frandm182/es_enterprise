@@ -1,3 +1,4 @@
+import '@babel/polyfill'
 import http from 'http';
 
 const requestHandler = function (req, res) {
