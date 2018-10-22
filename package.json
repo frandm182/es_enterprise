@@ -5,8 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "compile": "rm -rf dist/ && babel src -d dist",
-    "dev": "node dist/index.js"
+    "build": "rimraf dist/ && babel src -d dist",
+    "serve": "yarn run build && node dist/index.js",
+    "watch": "nodemon -w src --exec yarn run serve"
   },
   "keywords": [],
   "author": "",
@@ -15,7 +16,9 @@
     "@babel/cli": "^7.1.2",
     "@babel/core": "^7.1.2",
     "@babel/node": "^7.0.0",
-    "@babel/preset-env": "^7.1.0"
+    "@babel/preset-env": "^7.1.0",
+    "nodemon": "^1.18.4",
+    "rimraf": "^2.6.2"
   },
   "dependencies": {
     "@babel/polyfill": "^7.0.0"
