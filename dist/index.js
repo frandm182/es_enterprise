@@ -6,13 +6,13 @@ var _http = _interopRequireDefault(require("http"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-const requestHandler = function (req, res) {
+function requestHandler(req, res) {
   res.writeHead(200, {
     'Content-Type': 'text/plain'
   });
-  res.end('Hello');
-};
+  res.end('Hello, World!');
+}
 
 const server = _http.default.createServer(requestHandler);
 
-server.listen(8090);
+server.listen(8090); // Note that there is a newline below this line
