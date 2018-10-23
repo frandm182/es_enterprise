@@ -26,8 +26,10 @@
     "eslint": "^5.7.0",
     "eslint-config-airbnb-base": "^13.1.0",
     "eslint-plugin-import": "^2.14.0",
+    "ndb": "^1.0.26",
     "nodemon": "^1.18.4",
-    "rimraf": "^2.6.2"
+    "rimraf": "^2.6.2",
+    "superagent": "^4.0.0-beta.5"
   },
   "dependencies": {
     "@babel/polyfill": "^7.0.0",
