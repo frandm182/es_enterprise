@@ -3,7 +3,7 @@ import superagent from 'superagent';
 import assert from 'assert';
 
 When('the client creates a POST request to /users', function () {
-  this.request = superagent('POST', 'localhost:8090/users');
+  this.request = superagent('POST', `${process.env.SERVER_HOSTNAME}:${process.env.SERVER_PORT}/users`);
 });
 
 When('attaches a generic empty payload', function () {
