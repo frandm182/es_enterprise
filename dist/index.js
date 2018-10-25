@@ -15,31 +15,28 @@ app.post('/users', (req, res) => {
     const bodyString = Buffer.concat(payloadData).toString();
 
     if (bodyString.length > PAYLOAD_LIMIT) {
-      res.writeHead(413, {
-        'Content-Type': 'text/plain'
-      });
+      res.status(413);
+      res.set('Content-Type', 'text/plain');
       res.end();
       res.connection.destroy();
     }
   });
   req.on('end', () => {
     if (!payloadData.length) {
-      res.writeHead(400, {
-        'Content-TYpe': 'application/json'
-      });
-      res.end(JSON.stringify({
+      res.status(400);
+      res.set('Content-TYpe', 'application/json');
+      res.json({
         message: 'Payload should not be empty'
-      }));
+      });
       return;
     }
 
     if (req.headers['content-type'] !== 'application/json') {
-      res.writeHead(415, {
-        'Content-TYpe': 'application/json'
-      });
-      res.end(JSON.stringify({
+      res.status(415);
+      res.set('Content-TYpe', 'application/json');
+      res.json({
         message: 'The "Content-Type" header must always be "application/json"'
-      }));
+      });
       return;
     }
 
@@ -47,19 +44,17 @@ app.post('/users', (req, res) => {
       const bodyString = Buffer.concat(payloadData).toString();
       JSON.parse(bodyString);
     } catch (e) {
-      res.writeHead(400, {
-        'Content-TYpe': 'application/json'
-      });
-      res.end(JSON.stringify({
+      res.status(400);
+      res.set('Content-TYpe', 'application/json');
+      res.json({
         message: 'Payload should be in JSON format'
-      }));
+      });
     }
   });
 });
 app.get('/', (req, res) => {
-  res.writeHead(200, {
-    'Content-Type': 'text/plain'
-  });
+  res.status(200);
+  res.set('Content-Type', 'text/plain');
   res.end('Hello, World!');
 });
 app.listen(process.env.SERVER_PORT, () => {
