@@ -2,57 +2,67 @@
 
 require("@babel/polyfill");
 
-var _http = _interopRequireDefault(require("http"));
+var _express = _interopRequireDefault(require("express"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function requestHandler(req, res) {
-  if (req.method === 'POST' && req.url === '/users') {
-    const payloadData = [];
-    req.on('data', data => {
-      payloadData.push(data);
-    });
-    req.on('end', () => {
-      if (!payloadData.length) {
-        res.writeHead(400, {
-          'Content-TYpe': 'application/json'
-        });
-        res.end(JSON.stringify({
-          message: 'Payload should not be empty'
-        }));
-        return;
-      }
+const app = (0, _express.default)();
+app.post('/users', (req, res) => {
+  const payloadData = [];
+  const PAYLOAD_LIMIT = 1e6;
+  req.on('data', data => {
+    payloadData.push(data);
+    const bodyString = Buffer.concat(payloadData).toString();
 
-      if (req.headers['content-type'] !== 'application/json') {
-        res.writeHead(415, {
-          'Content-TYpe': 'application/json'
-        });
-        res.end(JSON.stringify({
-          message: 'The "Content-Type" header must always be "application/json"'
-        }));
-        return;
-      }
+    if (bodyString.length > PAYLOAD_LIMIT) {
+      res.writeHead(413, {
+        'Content-Type': 'text/plain'
+      });
+      res.end();
+      res.connection.destroy();
+    }
+  });
+  req.on('end', () => {
+    if (!payloadData.length) {
+      res.writeHead(400, {
+        'Content-TYpe': 'application/json'
+      });
+      res.end(JSON.stringify({
+        message: 'Payload should not be empty'
+      }));
+      return;
+    }
 
-      try {
-        const bodyString = Buffer.concat(payloadData).toString();
-        JSON.parse(bodyString);
-      } catch (e) {
-        res.writeHead(400, {
-          'Content-TYpe': 'application/json'
-        });
-        res.end(JSON.stringify({
-          message: 'Payload should be in JSON format'
-        }));
-      }
-    });
-  } else {
-    res.writeHead(200, {
-      'Content-Type': 'text/plain'
-    });
-    res.end('Hello, World!');
-  }
-}
+    if (req.headers['content-type'] !== 'application/json') {
+      res.writeHead(415, {
+        'Content-TYpe': 'application/json'
+      });
+      res.end(JSON.stringify({
+        message: 'The "Content-Type" header must always be "application/json"'
+      }));
+      return;
+    }
 
-const server = _http.default.createServer(requestHandler);
-
-server.listen(8090); // Note that there is a newline below this line
+    try {
+      const bodyString = Buffer.concat(payloadData).toString();
+      JSON.parse(bodyString);
+    } catch (e) {
+      res.writeHead(400, {
+        'Content-TYpe': 'application/json'
+      });
+      res.end(JSON.stringify({
+        message: 'Payload should be in JSON format'
+      }));
+    }
+  });
+});
+app.get('/', (req, res) => {
+  res.writeHead(200, {
+    'Content-Type': 'text/plain'
+  });
+  res.end('Hello, World!');
+});
+app.listen(process.env.SERVER_PORT, () => {
+  // eslint-disable-next-line no-console
+  console.log(`Hobnob API server listening on port ${process.env.SERVER_PORT}`);
+});
