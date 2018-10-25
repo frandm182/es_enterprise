@@ -1,44 +1,36 @@
 import '@babel/polyfill';
 import express from 'express';
+import bodyParser from 'body-parser';
 
 const app = express();
+app.use(bodyParser.json({ limit: 1e6 }));
 
 app.post('/users', (req, res) => {
-  const payloadData = [];
-  const PAYLOAD_LIMIT = 1e6;
-  req.on('data', (data) => {
-    payloadData.push(data);
-    const bodyString = Buffer.concat(payloadData).toString();
-    if (bodyString.length > PAYLOAD_LIMIT) {
-      res.status(413);
-      res.set('Content-Type', 'text/plain');
-      res.end();
-      res.connection.destroy();
-    }
-  });
+  if (req.headers['content-length'] === '0') {
+    res.status(400);
+    res.set('Content-Type', 'application/json');
+    res.json({
+      message: 'Payload should not be empty',
+    });
+    return;
+  }
+  if (req.headers['content-type'] !== 'application/json') {
+    res.status(415);
+    res.set('Content-Type', 'application/json');
+    res.json({
+      message: 'The "Content-Type" header must always be "application/json"',
+    });
+  }
+});
 
-  req.on('end', () => {
-    if (!payloadData.length) {
-      res.status(400);
-      res.set('Content-Type', 'application/json');
-      res.json({ message: 'Payload should not be empty' });
-      return;
-    }
-    if (req.headers['content-type'] !== 'application/json') {
-      res.status(415);
-      res.set('Content-Type', 'application/json');
-      res.json({ message: 'The "Content-Type" header must always be "application/json"' });
-      return;
-    }
-    try {
-      const bodyString = Buffer.concat(payloadData).toString();
-      JSON.parse(bodyString);
-    } catch (e) {
-      res.status(400);
-      res.set('Content-Type', 'application/json');
-      res.json({ message: 'Payload should be in JSON format' });
-    }
-  });
+app.use((err, req, res, next) => {
+  if (err instanceof SyntaxError && err.status === 400 && 'body' in err && err.type === 'entity.parse.failed') {
+    res.status(400);
+    res.set('Content-Type', 'application/json');
+    res.json({ message: 'Payload should be in JSON format' });
+    return;
+  }
+  next();
 });
 
 app.get('/', (req, res) => {
